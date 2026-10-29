@@ -1,0 +1,6 @@
+log/*
+tmp/*
+storage/*
+.env
+config/master.key
+.bundle

@@ -1,0 +1,12 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch('RAILS_MAX_THREADS', 5) %>
+  url: <%= ENV.fetch('DATABASE_URL', 'postgresql://localhost/ncc_development') %>
+development:
+  <<: *default
+test:
+  <<: *default
+  url: <%= ENV.fetch('TEST_DATABASE_URL', 'postgresql://localhost/ncc_test') %>
+production:
+  <<: *default
