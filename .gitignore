@@ -1,0 +1,40 @@
+# Rails
+/backend/tmp/
+/backend/log/*.log
+/backend/.bundle/
+/backend/vendor/bundle
+/backend/public/uploads/
+/backend/storage/
+
+# React
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.vite/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+*.swp
+*.swo
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# Docker
+*.log
+
+# Coverage
+/backend/coverage/
+/frontend/coverage/
+
+/frontend/test-results/
+/frontend/playwright-report/
+/frontend/*.tsbuildinfo
+/backend/config/master.key

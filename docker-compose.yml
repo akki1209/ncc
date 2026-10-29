@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ncc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+      POSTGRES_DB: ncc_development
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U ncc -d ncc_development']
+      interval: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    volumes: [redis_data:/data]
+    command: redis-server --appendonly yes
+  api:
+    build: ./backend
+    environment: &app_env
+      RAILS_ENV: development
+      DATABASE_URL: postgresql://ncc:${POSTGRES_PASSWORD}@db/ncc_development
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:?Set SECRET_KEY_BASE}
+      FRONTEND_URL: http://localhost:5173
+      APP_HOST: localhost:5173
+      SMTP_HOST: mail
+      SMTP_PORT: 1025
+      MAILER_FROM: training@ncc.local
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL:-admin@ncc.local}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:?Set SEED_ADMIN_PASSWORD}
+      ORGANIZATION_NAME: ${ORGANIZATION_NAME:-NCC Officers’ Training Academy, Gwalior}
+    command: sh -c 'bundle exec rails db:prepare && bundle exec rails server -b 0.0.0.0'
+    volumes: [camp_storage:/app/storage]
+    ports: ['3000:3000']
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_started}
+  worker:
+    build: ./backend
+    environment: *app_env
+    command: bundle exec sidekiq
+    volumes: [camp_storage:/app/storage]
+    depends_on: [api, redis]
+  frontend:
+    build: ./frontend
+    environment:
+      API_TARGET: http://api:3000
+    ports: ['5173:5173']
+    depends_on: [api]
+  mail:
+    image: axllent/mailpit:latest
+    ports: ['8025:8025']
+volumes:
+  postgres_data:
+  redis_data:
+  camp_storage:
